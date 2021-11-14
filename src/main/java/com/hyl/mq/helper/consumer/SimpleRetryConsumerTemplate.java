@@ -23,7 +23,8 @@ public class SimpleRetryConsumerTemplate extends ConsumerTemplate {
     @Override
     protected void onConsumerFail(ConsumerParamHolder consumerParam) {
         // add retry times
-        int retryTimes = mqLogMapper.getBean().addRetryTimes(consumerParam.getMsgUid(), consumerParam.getMsgPayloadStr());
+        int retryTimes = mqLogMapper.getBean().addRetryTimes(consumerParam.getMsgUid(),
+                consumerParam.getMsgPayloadStr(), consumerParam.getConsumerQueueNames());
         if (retryTimes >= consumerParam.getRetryTimes()) {
             LOGGER.warn("this message consumer is maximum number of times,uid is:" + consumerParam.getMsgUid());
             basicAck(consumerParam);

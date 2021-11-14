@@ -30,7 +30,8 @@ public abstract class IdempotentConsumerTemplate extends ConsumerTemplate {
     @Override
     protected void onConsumerFail(ConsumerParamHolder consumerParam) {
         // 消费失败，添加失败记录后直接确认，等待补偿
-        mqLogMapper.getBean().addMqLog(consumerParam.getMsgUid(), consumerParam.getMsgPayloadStr());
+        mqLogMapper.getBean().addMqLog(consumerParam.getMsgUid(),
+                consumerParam.getMsgPayloadStr(), consumerParam.getConsumerQueueNames());
         basicAck(consumerParam);
     }
 }

@@ -61,11 +61,31 @@ public abstract class ConsumerTemplate {
         }
     }
 
+    /**
+     * 消费前预校验
+     *
+     * @param consumerParam consumerParam
+     * @return result
+     */
     protected boolean preCheck(ConsumerParamHolder consumerParam) {
         return true;
     }
 
+    /**
+     * 消费前预校验失败
+     *
+     * @param consumerParam consumerParam
+     */
     protected void onPreCheckFail(ConsumerParamHolder consumerParam) {
+
+    }
+
+    /**
+     * 消费逻辑执行完毕
+     *
+     * @param consumerParam consumerParam
+     */
+    protected void onConsumerComplete(ConsumerParamHolder consumerParam) {
 
     }
 

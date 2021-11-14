@@ -1,8 +1,6 @@
 package com.hyl.mq.helper.consumer;
 
 
-import java.util.Date;
-
 /**
  * @author huayuanlin
  * @date 2021/08/07 20:43
@@ -21,9 +19,9 @@ public class MqLogDO {
     private String uniqueId;
 
     /**
-     * 状态，1代表已补偿完毕，0代表初始状态，注意0不代表消费失败！
+     * 消费队列名
      */
-    private Boolean status;
+    private String consumerQueueNames;
 
     /**
      * 重试次数
@@ -38,19 +36,19 @@ public class MqLogDO {
     /**
      * 创建时间
      */
-    private Date createTime;
+    private Long createTime;
 
     /**
      * 更新时间
      */
-    private Date updateTime;
+    private Long updateTime;
 
     @Override
     public String toString() {
-        return "ConsumerLogDO{" +
+        return "MqLogDO{" +
                 "id=" + id +
                 ", uniqueId='" + uniqueId + '\'' +
-                ", status=" + status +
+                ", consumerQueueNames='" + consumerQueueNames + '\'' +
                 ", retry=" + retry +
                 ", message='" + message + '\'' +
                 ", createTime=" + createTime +
@@ -74,12 +72,12 @@ public class MqLogDO {
         this.uniqueId = uniqueId;
     }
 
-    public Boolean getStatus() {
-        return status;
+    public String getConsumerQueueNames() {
+        return consumerQueueNames;
     }
 
-    public void setStatus(Boolean status) {
-        this.status = status;
+    public void setConsumerQueueNames(String consumerQueueNames) {
+        this.consumerQueueNames = consumerQueueNames;
     }
 
     public Integer getRetry() {
@@ -98,19 +96,19 @@ public class MqLogDO {
         this.message = message;
     }
 
-    public Date getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
 
-    public Date getUpdateTime() {
+    public Long getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(Date updateTime) {
+    public void setUpdateTime(Long updateTime) {
         this.updateTime = updateTime;
     }
 }

@@ -5,6 +5,8 @@ import com.hyl.mq.helper.util.JsonUtil;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 
+import java.util.Set;
+
 /**
  * @author huayuanlin
  * @date 2021/10/24 15:22
@@ -19,6 +21,8 @@ public class ConsumerParamHolder extends InvocationConsumerParam {
     private Object msgPayload;
 
     private String msgUid;
+
+    private Set<String> consumerQueueNames;
 
     private boolean isRetry;
 
@@ -113,6 +117,14 @@ public class ConsumerParamHolder extends InvocationConsumerParam {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public Set<String> getConsumerQueueNames() {
+        return consumerQueueNames;
+    }
+
+    public void setConsumerQueueNames(Set<String> consumerQueueNames) {
+        this.consumerQueueNames = consumerQueueNames;
     }
 
     public Object getMsgPayload() {

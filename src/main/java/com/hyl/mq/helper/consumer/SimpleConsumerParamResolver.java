@@ -8,6 +8,7 @@ import com.hyl.mq.helper.exx.ConsumerException;
 import com.hyl.mq.helper.exx.FrameworkException;
 import com.hyl.mq.helper.exx.NeverHappenException;
 import com.hyl.mq.helper.protocol.BaseMqMsg;
+import com.hyl.mq.helper.util.AnnotationUtil;
 import com.hyl.mq.helper.util.MethodInvocationUtil;
 import com.rabbitmq.client.Channel;
 import org.aopalliance.intercept.MethodInvocation;
@@ -15,6 +16,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * @author huayuanlin
@@ -51,10 +53,12 @@ public class SimpleConsumerParamResolver implements ConsumerParamResolver {
             throw new FrameworkException("your msg not contain msg uid,please check sender or use" +
                     " original @RabbitListener annotation!");
         }
+        Set<String> queueNames = AnnotationUtil.resolveQueueNames(hpRabbitListener);
         return ObjBuilder.create(ConsumerParamHolder::new)
                 .of(ConsumerParamHolder::setSource, invocation)
                 .of(ConsumerParamHolder::setConsumerLogic, this::invokeProceed)
                 .of(ConsumerParamHolder::setMsgPayload, msg)
+                .of(ConsumerParamHolder::setConsumerQueueNames, queueNames)
                 .of(ConsumerParamHolder::setMsgUid, uid)
                 .of(ConsumerParamHolder::setChannel, (Channel) args[1])
                 .of(ConsumerParamHolder::setMessage, (Message) args[2])

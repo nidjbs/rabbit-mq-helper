@@ -1,6 +1,6 @@
 package com.hyl.mq.helper.consumer;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.hyl.mq.helper.util.SpringBeanUtil;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,8 +9,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.PreparedStatement;
-import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author huayuanlin
@@ -19,25 +19,49 @@ import java.util.List;
  */
 public class JdbcTemplateMqLogMapper implements IMqLogMapper {
 
-    private static final String SELECT_ID_BY_UID_SQL = "SELECT id,`unique_id` AS uniqueId, status, retry, message, create_time AS createTime,update_time AS updateTime FROM `mq_log` WHERE unique_id = '%s' ";
-    private static final String INSERT_SQL = "INSERT INTO `mq_log` (`unique_id`,`status`,`retry`,`message`,`create_time`,`update_time`) VALUES (?,?,?,?,?,?) ";
-    private static final String UPDATE_RETRY_TIMES_SQL = "UPDATE `mq_log` SET `retry` = `retry` + 1 WHERE `unique_id` = ? ";
+    private static final String SELECT_ID_BY_UID_SQL = "SELECT id,`unique_id` AS uniqueId, status, retry, message, create_time AS createTime,update_time AS updateTime,consumer_queue_names AS consumerQueueNames FROM `mq_log` WHERE unique_id = '%s' ";
+    private static final String INSERT_SQL = "INSERT INTO `mq_log` (`unique_id`,`retry`,`message`,`create_time`,`update_time`,`consumer_queue_names`) VALUES (?,?,?,?,?,?) ";
+    private static final String UPDATE_RETRY_TIMES_SQL = "UPDATE `mq_log` SET `retry` = `retry` + 1, `update_time` = current_timestamp() WHERE `unique_id` = ? ";
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private volatile static JdbcTemplate jdbcTemplate;
+
+    /**
+     * 获取JdbcTemplate
+     * JdbcTemplate为空时从spring中获取
+     *
+     * @return redisTemplate
+     */
+    public static JdbcTemplate getJdbcTemplate() {
+        if (jdbcTemplate == null) {
+            synchronized (JdbcTemplateMqLogMapper.class) {
+                if (jdbcTemplate == null) {
+                    jdbcTemplate = SpringBeanUtil.getBeanByType(JdbcTemplate.class);
+                }
+            }
+        }
+        return jdbcTemplate;
+    }
+
+    public static void initJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        JdbcTemplateMqLogMapper.jdbcTemplate = jdbcTemplate;
+    }
 
 
     @Override
-    public int addRetryTimes(String mqLogUid, String msg) {
-        MqLogDO mqLogDO = obtainOrAdd(mqLogUid, msg);
-        jdbcTemplate.update(UPDATE_RETRY_TIMES_SQL, mqLogUid);
+    public int addRetryTimes(String mqLogUid, String msg, Set<String> consumerQueueNames) {
+        String consumerQueueNamesStr = null;
+        if (!CollectionUtils.isEmpty(consumerQueueNames)) {
+            consumerQueueNamesStr = consumerQueueNames.toString();
+        }
+        MqLogDO mqLogDO = obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr);
+        getJdbcTemplate().update(UPDATE_RETRY_TIMES_SQL, mqLogUid);
         return mqLogDO.getRetry() + 1;
     }
 
     @Override
-    public boolean tryAddMqLog(String mqLogUid,String msg) {
+    public boolean tryAddMqLog(String mqLogUid, String msg) {
         try {
-            addNewLog(mqLogUid, msg);
+            addNewLog(mqLogUid, msg, null);
         } catch (DuplicateKeyException e) {
             return false;
         }
@@ -45,12 +69,12 @@ public class JdbcTemplateMqLogMapper implements IMqLogMapper {
     }
 
 
-    private MqLogDO obtainOrAdd(String mqLogUid, String msg) {
+    private MqLogDO obtainOrAdd(String mqLogUid, String msg, String consumerQueueNames) {
         String sqlFormat = String.format(SELECT_ID_BY_UID_SQL, mqLogUid);
-        List<MqLogDO> oldMqLog = jdbcTemplate.query(sqlFormat, new BeanPropertyRowMapper<>(MqLogDO.class));
+        List<MqLogDO> oldMqLog = getJdbcTemplate().query(sqlFormat, new BeanPropertyRowMapper<>(MqLogDO.class));
         MqLogDO result;
         if (CollectionUtils.isEmpty(oldMqLog)) {
-            result = addNewLog(mqLogUid, msg);
+            result = addNewLog(mqLogUid, msg, consumerQueueNames);
         } else {
             result = oldMqLog.get(0);
         }
@@ -58,28 +82,32 @@ public class JdbcTemplateMqLogMapper implements IMqLogMapper {
     }
 
     @Override
-    public void addMqLog(String mqLogUid, String msg) {
-        obtainOrAdd(mqLogUid, msg);
+    public void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames) {
+        String consumerQueueNamesStr = null;
+        if (!CollectionUtils.isEmpty(consumerQueueNames)) {
+            consumerQueueNamesStr = consumerQueueNames.toString();
+        }
+        obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr);
     }
 
-    private MqLogDO addNewLog(String mqLogUid, String msg) {
+    private MqLogDO addNewLog(String mqLogUid, String msg, String consumerQueueNames) {
         MqLogDO mqLogDO = new MqLogDO();
-        mqLogDO.setCreateTime(new Date());
+        mqLogDO.setCreateTime(System.currentTimeMillis());
         mqLogDO.setRetry(0);
-        mqLogDO.setStatus(Boolean.FALSE);
-        mqLogDO.setUpdateTime(new Date());
+        mqLogDO.setUpdateTime(System.currentTimeMillis());
         mqLogDO.setUniqueId(mqLogUid);
         mqLogDO.setMessage(msg);
+        mqLogDO.setConsumerQueueNames(consumerQueueNames);
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
+        getJdbcTemplate().update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     INSERT_SQL, new String[]{"id"});
             preparedStatement.setString(1, mqLogDO.getUniqueId());
-            preparedStatement.setBoolean(2, mqLogDO.getStatus());
-            preparedStatement.setInt(3, mqLogDO.getRetry());
-            preparedStatement.setString(4, mqLogDO.getMessage());
-            preparedStatement.setDate(5, new java.sql.Date(System.currentTimeMillis()));
-            preparedStatement.setDate(6, new java.sql.Date(System.currentTimeMillis()));
+            preparedStatement.setInt(2, mqLogDO.getRetry());
+            preparedStatement.setString(3, mqLogDO.getMessage());
+            preparedStatement.setLong(4, mqLogDO.getCreateTime());
+            preparedStatement.setLong(5, mqLogDO.getUpdateTime());
+            preparedStatement.setString(6, mqLogDO.getConsumerQueueNames());
             return preparedStatement;
         }, keyHolder);
         return mqLogDO;

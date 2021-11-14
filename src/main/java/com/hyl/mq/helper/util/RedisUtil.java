@@ -18,7 +18,7 @@ public class RedisUtil {
     }
 
 
-    private static RedisTemplate<String, Object> redisTemplate;
+    private volatile static RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 初始化redis template
