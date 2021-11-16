@@ -22,7 +22,7 @@ public class StreamUtil {
     }
 
     /**
-     * 过滤null元素的流操作
+     * Stream operations to filter null elements
      */
     public static <T> Stream<T> nonNull(Collection<T> collection) {
         if (CollectionUtils.isEmpty(collection)) {
@@ -33,7 +33,7 @@ public class StreamUtil {
 
 
     /**
-     * 过滤null元素的流操作
+     * Stream operations to filter null elements
      */
     public static <T> Stream<T> nonNull(T[] array) {
         if (array == null || array.length <= 0) {
@@ -43,7 +43,7 @@ public class StreamUtil {
     }
 
     /**
-     * 去重操作
+     * Deduplication operation
      */
     public static <T> List<T> distinct(List<T> list) {
         if (CollectionUtils.isEmpty(list)) {
@@ -53,7 +53,8 @@ public class StreamUtil {
     }
 
     /**
-     * 请保证map的key是唯一的，否则会报错
+     * to map
+     * Please ensure that the key of the map is unique, otherwise an error will be reported
      */
     public static <K, V, E> Map<K, V> toMap(Collection<E> collection,
                                             Function<E, K> keyFun,
@@ -67,7 +68,8 @@ public class StreamUtil {
     }
 
     /**
-     * 请保证map的key是唯一的，否则会报错
+     * to map
+     * Please ensure that the key of the map is unique, otherwise an error will be reported
      */
     public static <K, E> Map<K, E> toMap(Collection<E> collection,
                                          Function<E, K> keyFun) {
@@ -79,7 +81,7 @@ public class StreamUtil {
 
 
     /**
-     * 根据字段排序（默认字段的自然排序）
+     * Sort by field (natural sorting by default field)
      *
      * @param list          list 源
      * @param soredFieldFun 根据什么字段排序？ fun
@@ -103,6 +105,9 @@ public class StreamUtil {
     }
 
 
+    /**
+     * filter
+     */
     public static <E> Collection<E> filter(Collection<E> list, Predicate<E> predicate) {
         if (CollectionUtils.isEmpty(list)) {
             return list;

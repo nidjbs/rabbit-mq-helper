@@ -8,10 +8,10 @@ package com.hyl.mq.helper.consumer;
 public interface IdempotentLock {
 
     /**
-     * 获得lock
+     * getLock
      * @param key key
      * @param msg msg
-     * @return 是否获得
+     * @return result
      */
     Boolean obtainLock(String key,String msg);
 

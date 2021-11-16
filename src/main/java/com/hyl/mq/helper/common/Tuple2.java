@@ -5,6 +5,7 @@ package com.hyl.mq.helper.common;
  * @date 2021/09/26 15:21
  * @desc the class desc
  */
+@SuppressWarnings("all")
 public class Tuple2<M,N> {
 
     private static final Tuple2 EMPTY = new Tuple2(null,null);
@@ -18,7 +19,6 @@ public class Tuple2<M,N> {
         this.n = n;
     }
 
-    @SuppressWarnings("unchecked")
     public static <M,N> Tuple2<M,N> empty() {
         return EMPTY;
     }

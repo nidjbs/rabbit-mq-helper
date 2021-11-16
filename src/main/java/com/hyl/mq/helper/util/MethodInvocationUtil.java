@@ -20,7 +20,7 @@ public class MethodInvocationUtil {
     }
 
     /**
-     * 获得invocation中标注了注解的Method对象
+     * Obtain the Method object annotated in the invocation
      *
      * @param invocation invocation
      * @param clazz 注解class

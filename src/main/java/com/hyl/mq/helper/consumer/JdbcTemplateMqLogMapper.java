@@ -26,8 +26,8 @@ public class JdbcTemplateMqLogMapper implements IMqLogMapper {
     private volatile static JdbcTemplate jdbcTemplate;
 
     /**
-     * 获取JdbcTemplate
-     * JdbcTemplate为空时从spring中获取
+     * get JdbcTemplate
+     * Get it from spring when it is empty
      *
      * @return redisTemplate
      */

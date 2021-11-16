@@ -9,9 +9,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+
 import javax.annotation.Resource;
 import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -28,8 +29,8 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
     protected static ThreadPoolExecutor THREAD_POOL_EXECUTOR = new
             ThreadPoolExecutor(CORE_COUNT, CORE_COUNT,
             1000, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(2000),
-            new CustomizableThreadFactory("mq-retry-pool"),
+            new LinkedBlockingDeque<>(2000),
+            new CustomizableThreadFactory("mq-sender-retry-pool"),
             new ThreadPoolExecutor.AbortPolicy());
 
     protected MqRetryCounter mqRetryCounter = MqRetryCounter.DEFAULT;
@@ -51,10 +52,10 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
             }
             Integer already = message.getRetryTimes();
             if (already >= config.getProducer().getRetryTimes()) {
-                // todo 考虑入库
+                // todo consider record to db
                 return;
             }
-            // 异步重试
+            // async retry
             retryAsync(correlationData, message);
         }
     }
@@ -84,7 +85,8 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
 
     /**
      * rabbitTemplate
-     * 如果你项目种含有多个RabbitTemplate时（且无优先级区分），请重写本方法指定你的RabbitTemplate，否则将会报错。
+     * If your project contains multiple Rabbit Templates (without priority distinction)：
+     * please override this method to specify your Rabbit Template, otherwise an error will be reported.
      *
      * @return rabbitTemplate
      */

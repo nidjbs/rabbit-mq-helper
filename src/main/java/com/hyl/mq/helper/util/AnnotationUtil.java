@@ -23,10 +23,10 @@ public class AnnotationUtil {
     }
 
     /**
-     * 解析队列名称
+     * Resolve queue name
      *
      * @param hpRabbitListener hpRabbitListener
-     * @return 队列名称
+     * @return queue names
      */
     public static Set<String> resolveQueueNames(HpRabbitListener hpRabbitListener) {
         Set<String> queueNames = new HashSet<>();

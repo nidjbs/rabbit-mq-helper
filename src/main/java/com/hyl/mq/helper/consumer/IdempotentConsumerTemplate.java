@@ -23,13 +23,13 @@ public abstract class IdempotentConsumerTemplate extends ConsumerTemplate {
 
     @Override
     protected void onPreCheckFail(ConsumerParamHolder consumerParam) {
-        // 获取锁失败，即当前是重复消费，直接将消息确认
+        // Failed to acquire the lock, that is, the current is repeated consumption, directly confirm the message
         basicAck(consumerParam);
     }
 
     @Override
     protected void onConsumerFail(ConsumerParamHolder consumerParam) {
-        // 消费失败，添加失败记录后直接确认，等待补偿
+        // Consumption fails, confirm directly after adding the failed record, waiting for compensation
         mqLogMapper.getBean().addMqLog(consumerParam.getMsgUid(),
                 consumerParam.getMsgPayloadStr(), consumerParam.getConsumerQueueNames());
         basicAck(consumerParam);

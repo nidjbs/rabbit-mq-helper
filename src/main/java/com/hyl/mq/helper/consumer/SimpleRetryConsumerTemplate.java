@@ -31,12 +31,12 @@ public class SimpleRetryConsumerTemplate extends ConsumerTemplate {
         } else {
             long retrySleepTimeOut = consumerParam.getRetrySleepTimeOut();
             if (retrySleepTimeOut > 0) {
-                // 等于延迟投递回队列
+                // delayed nack,avoid blocking the consumer thread
                 SCHEDULED_EXECUTOR.schedule(
                         () -> SafeExecuteUtil.safeExecute(() -> basicNack(consumerParam), Exception.class),
                         retrySleepTimeOut, TimeUnit.MILLISECONDS);
             } else {
-                // 直接nack
+                // nack
                 basicNack(consumerParam);
             }
         }

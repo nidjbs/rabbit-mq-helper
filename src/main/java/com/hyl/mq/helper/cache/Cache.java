@@ -8,19 +8,19 @@ package com.hyl.mq.helper.cache;
 public interface Cache<K, V> {
 
     /**
-     * 初始化缓存动作，可选
+     * Initialize the cache action, optional
      */
     void initCache();
 
     /**
-     * 从缓存中获取
+     * get from cache
      * @param k key
      * @return result
      */
     V get(K k);
 
     /**
-     * 加入缓存中
+     * put cache
      *
      * @param k key
      * @param v value
@@ -28,12 +28,12 @@ public interface Cache<K, V> {
     void put(K k, V v);
 
     /**
-     * 清理缓存，可选
+     * clean，optional
      */
     void clean();
 
     /**
-     * 移除某个缓存
+     * remove
      * @param k key
      */
     void remove(K k);

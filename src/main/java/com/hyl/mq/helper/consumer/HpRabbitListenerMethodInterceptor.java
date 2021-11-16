@@ -12,7 +12,7 @@ import java.lang.annotation.Annotation;
  */
 public class HpRabbitListenerMethodInterceptor extends AbstractMethodInterceptor {
 
-    private final Executor<InvocationConsumerParam> executor = SmartConsumerExecutor.INSTANCE;
+    private final ConsumerExecutor<InvocationConsumerParam> executor = SmartConsumerExecutor.INSTANCE;
 
     private final ConsumerParamResolver consumerParamResolver = SimpleConsumerParamResolver.INSTANCE;
 

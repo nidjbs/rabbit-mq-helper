@@ -15,7 +15,7 @@ import java.time.Duration;
  */
 public abstract class StandardRedisCache<V> implements Cache<String, V> {
 
-    /***单位：s */
+    /***unit：s */
     protected final int keyTimeOut;
 
     protected StandardRedisCache(int keyTimeOut) {
@@ -38,7 +38,7 @@ public abstract class StandardRedisCache<V> implements Cache<String, V> {
     }
 
     /**
-     * 当前json类类型
+     *  json class type
      *
      * @return class
      */

@@ -10,7 +10,7 @@ import org.aopalliance.intercept.MethodInvocation;
 public interface ConsumerParamResolver {
 
     /**
-     * 解析消费方法执行参数
+     * resole the execution parameters of the consumer method
      *
      * @param invocation invocation
      * @return params

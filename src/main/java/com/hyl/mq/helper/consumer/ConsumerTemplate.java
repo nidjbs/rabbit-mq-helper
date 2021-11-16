@@ -62,7 +62,7 @@ public abstract class ConsumerTemplate {
     }
 
     /**
-     * 消费前预校验
+     * on consumer pre check
      *
      * @param consumerParam consumerParam
      * @return result
@@ -72,7 +72,7 @@ public abstract class ConsumerTemplate {
     }
 
     /**
-     * 消费前预校验失败
+     * consumer pre check fail
      *
      * @param consumerParam consumerParam
      */
@@ -81,7 +81,7 @@ public abstract class ConsumerTemplate {
     }
 
     /**
-     * 消费逻辑执行完毕
+     * on consumer complete
      *
      * @param consumerParam consumerParam
      */
@@ -90,7 +90,7 @@ public abstract class ConsumerTemplate {
     }
 
     /**
-     * 消费失败处理逻辑
+     * on consumer fail
      *
      * @param consumerParam consumerParam
      */

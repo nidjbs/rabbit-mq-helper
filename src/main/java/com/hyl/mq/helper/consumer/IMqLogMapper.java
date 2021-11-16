@@ -12,12 +12,12 @@ import java.util.Set;
 public interface IMqLogMapper {
 
     /**
-     * 添加消息重试次数
+     * addMessageRetries
      *
      * @param mqLogUid           mqLogUid
      * @param msg                msg
      * @param consumerQueueNames consumerQueueNames
-     * @return 重试次数
+     * @return retry times
      */
     @Transactional(rollbackFor = Exception.class)
     int addRetryTimes(String mqLogUid, String msg, Set<String> consumerQueueNames);
@@ -27,15 +27,17 @@ public interface IMqLogMapper {
      * 尝试新增mqLog
      *
      * @param mqLogUid mqLogUid
-     * @return 是否成功
+     * @param msg msg
+     * @return result
      */
     boolean tryAddMqLog(String mqLogUid, String msg);
 
     /**
-     * 添加消息记录
+     * Add message record
      *
      * @param mqLogUid mqLogUid
      * @param msg      msg
+     * @param consumerQueueNames   consumerQueueNames
      */
     @Transactional(rollbackFor = Exception.class)
     void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames);

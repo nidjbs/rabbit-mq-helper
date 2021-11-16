@@ -10,9 +10,9 @@ import org.springframework.lang.Nullable;
  * @date 2021/10/24 14:38
  * @desc the class desc
  */
-public class SmartConsumerExecutor implements Executor<InvocationConsumerParam> {
+public class SmartConsumerExecutor implements ConsumerExecutor<InvocationConsumerParam> {
 
-    public static final Executor<InvocationConsumerParam> INSTANCE = new SmartConsumerExecutor();
+    public static final ConsumerExecutor<InvocationConsumerParam> INSTANCE = new SmartConsumerExecutor();
 
     @Override
     public Object doExecute(InvocationConsumerParam paramHolder) {

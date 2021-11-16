@@ -9,37 +9,37 @@ package com.hyl.mq.helper.consumer;
 public class MqLogDO {
 
     /**
-     * 主键
+     * primaryKey
      */
     private Long id;
 
     /**
-     * 消息唯一id
+     * messageUniqueId
      */
     private String uniqueId;
 
     /**
-     * 消费队列名
+     * consumer queue name
      */
     private String consumerQueueNames;
 
     /**
-     * 重试次数
+     * numberOfRetries
      */
     private Integer retry;
 
     /**
-     * 消息
+     * message
      */
     private String message;
 
     /**
-     * 创建时间
+     * createTime
      */
     private Long createTime;
 
     /**
-     * 更新时间
+     * updateTime
      */
     private Long updateTime;
 

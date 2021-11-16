@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * @author huayuanlin
  * @date 2021/10/26 09:50
- * @desc 注入自定义的bean给当前框架，未注入的属性默认采用默认的bean
+ * @desc Inject a custom bean to the current framework, and the don't injected properties will use the default bean by default
  * @see JdbcTemplateMqLogMapper
  * @see RedisUtil
  */
