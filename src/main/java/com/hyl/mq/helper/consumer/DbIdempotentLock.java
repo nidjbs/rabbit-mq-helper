@@ -9,7 +9,7 @@ public class DbIdempotentLock implements IdempotentLock {
 
     public static final IdempotentLock INSTANCE = new DbIdempotentLock();
 
-    private final SingleSpringBeanWrapper<IMqLogMapper> mqLogMapper = new SingleSpringBeanWrapper<IMqLogMapper>() {};
+    private final SingleSpringBeanWrapper<IMqConsumerLogMapper> mqLogMapper = new SingleSpringBeanWrapper<IMqConsumerLogMapper>() {};
 
 
     @Override

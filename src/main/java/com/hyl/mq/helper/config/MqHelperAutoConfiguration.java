@@ -1,13 +1,14 @@
 package com.hyl.mq.helper.config;
 
 import com.hyl.mq.helper.consumer.*;
+import com.hyl.mq.helper.producer.compensate.IMqSendFailLogMapper;
+import com.hyl.mq.helper.producer.compensate.JdbcTemplateMqSendFailLogMapper;
 import com.hyl.mq.helper.util.SpringBeanUtil;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 
 /**
@@ -19,6 +20,7 @@ public class MqHelperAutoConfiguration {
 
 
     @Bean
+    @ConditionalOnMissingBean
     public MethodInterceptor hpRabbitListenerMethodInterceptor() {
         return new HpRabbitListenerMethodInterceptor();
     }
@@ -30,14 +32,21 @@ public class MqHelperAutoConfiguration {
     }
 
     @Bean
-    public AbstractAopProxyCreator  hpRabbitListenerAopProxyCreator() {
+    @ConditionalOnMissingBean
+    public AbstractAopProxyCreator hpRabbitListenerAopProxyCreator() {
         return new HpRabbitListenerAopProxyCreator(hpRabbitListenerMethodInterceptor());
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public JdbcTemplateMqLogMapper jdbcTemplateMqLogMapper() {
-        return new JdbcTemplateMqLogMapper();
+    public IMqConsumerLogMapper jdbcTemplateMqConsumerLogMapper() {
+        return new JdbcTemplateMqConsumerLogMapper();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public IMqSendFailLogMapper jdbcTemplateMqSendFailLogMapper() {
+        return new JdbcTemplateMqSendFailLogMapper();
     }
 
     @Bean

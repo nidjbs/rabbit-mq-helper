@@ -1,5 +1,6 @@
 package com.hyl.mq.helper.consumer;
 
+import com.hyl.mq.helper.consumer.compensate.CompensateState;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
@@ -9,7 +10,7 @@ import java.util.Set;
  * @date 2021/10/24 22:34
  * @desc the interface desc
  */
-public interface IMqLogMapper {
+public interface IMqConsumerLogMapper {
 
     /**
      * addMessageRetries
@@ -39,8 +40,15 @@ public interface IMqLogMapper {
      * @param msg      msg
      * @param consumerQueueNames   consumerQueueNames
      */
-    @Transactional(rollbackFor = Exception.class)
     void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames);
+
+    /**
+     * update consumer mq msg state
+     *
+     * @param mqLogUid mqLogUid
+     * @param compensateState compensateState
+     */
+    void updateState(String mqLogUid, CompensateState compensateState);
 
 
 }

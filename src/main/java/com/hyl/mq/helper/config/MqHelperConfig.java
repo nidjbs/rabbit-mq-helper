@@ -11,9 +11,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MqHelperConfig {
 
 
-    private Producer producer;
+    private Producer producer = new Producer();
 
-    private Consumer consumer;
+    private Consumer consumer = new Consumer();
 
 
     public static class Producer{
@@ -32,6 +32,18 @@ public class MqHelperConfig {
 
     public static class Consumer{
 
+        /*** one day ms*/
+        private static final long  DEFAULT_REDIS_IDEMPOTENT_LOCK_TTL = 86400000L;
+
+        private Long redisIdempotentLockTtl = DEFAULT_REDIS_IDEMPOTENT_LOCK_TTL;
+
+        public Long getRedisIdempotentLockTtl() {
+            return redisIdempotentLockTtl;
+        }
+
+        public void setRedisIdempotentLockTtl(Long redisIdempotentLockTtl) {
+            this.redisIdempotentLockTtl = redisIdempotentLockTtl;
+        }
     }
 
     public Producer getProducer() {

@@ -5,7 +5,7 @@ package com.hyl.mq.helper.producer;
  * @date 2021/09/27 14:19
  * @desc the interface desc
  */
-public interface MqSender {
+public interface RabbitMqSender {
 
 
      /**

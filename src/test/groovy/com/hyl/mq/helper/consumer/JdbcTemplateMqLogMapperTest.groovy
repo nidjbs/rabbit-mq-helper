@@ -13,7 +13,7 @@ import spock.lang.Specification
 class JdbcTemplateMqLogMapperTest extends Specification {
 
     @Autowired
-    JdbcTemplateMqLogMapper jdbcTemplateMqLogMapper
+    JdbcTemplateMqConsumerLogMapper jdbcTemplateMqLogMapper
 
     def "test1"() {
         when:
@@ -24,7 +24,7 @@ class JdbcTemplateMqLogMapperTest extends Specification {
     }
 
     @Configuration
-    @Import([DataSourceAutoConfiguration,JdbcTemplateMqLogMapper, JdbcTemplateAutoConfiguration])
+    @Import([DataSourceAutoConfiguration,JdbcTemplateMqConsumerLogMapper, JdbcTemplateAutoConfiguration])
     @Profile("test")
     static class Config {
 

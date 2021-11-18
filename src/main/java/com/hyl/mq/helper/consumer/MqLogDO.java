@@ -34,6 +34,11 @@ public class MqLogDO {
     private String message;
 
     /**
+     * state (1-to be compensated, 2-compensation completed, -1 others)
+     */
+    private Integer state;
+
+    /**
      * createTime
      */
     private Long createTime;
@@ -51,9 +56,18 @@ public class MqLogDO {
                 ", consumerQueueNames='" + consumerQueueNames + '\'' +
                 ", retry=" + retry +
                 ", message='" + message + '\'' +
+                ", state=" + state +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 '}';
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
     }
 
     public Long getId() {

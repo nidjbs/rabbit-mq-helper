@@ -3,12 +3,18 @@ package com.hyl.mq.helper.producer;
 
 import com.hyl.mq.helper.cache.MqRetryCounter;
 import com.hyl.mq.helper.config.MqHelperConfig;
+import com.hyl.mq.helper.consumer.SingleSpringBeanWrapper;
 import com.hyl.mq.helper.exx.FrameworkException;
+import com.hyl.mq.helper.producer.compensate.IMqSendFailLogMapper;
+import com.hyl.mq.helper.producer.compensate.MqSendFailLogDO;
+import com.hyl.mq.helper.util.JsonUtil;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.UUID;
@@ -22,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2021/09/22 14:35
  * @desc 请保证 rabbitmq.publisher-confirms=true
  */
-public abstract class AbstractConfirmedMqSender implements RabbitTemplate.ConfirmCallback, InitializingBean, MqSender {
+public abstract class AbstractConfirmedMqSender implements RabbitTemplate.ConfirmCallback, InitializingBean, RabbitMqSender {
 
     private static final int CORE_COUNT = Runtime.getRuntime().availableProcessors();
 
@@ -34,6 +40,14 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
             new ThreadPoolExecutor.AbortPolicy());
 
     protected MqRetryCounter mqRetryCounter = MqRetryCounter.DEFAULT;
+
+    private final SingleSpringBeanWrapper<IMqSendFailLogMapper> sendFailLogMapper = new SingleSpringBeanWrapper<IMqSendFailLogMapper>() {
+    };
+
+    @Value("${spring.application.name}")
+    private String appName;
+
+    private static final String DEFAULT_APP_NAME = "default_app_name";
 
     @Resource
     protected MqHelperConfig config;
@@ -52,7 +66,9 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
             }
             Integer already = message.getRetryTimes();
             if (already >= config.getProducer().getRetryTimes()) {
-                // todo consider record to db
+                if (isRecordWhenFail()) {
+                    addFailLog(message);
+                }
                 return;
             }
             // async retry
@@ -90,7 +106,7 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
      *
      * @return rabbitTemplate
      */
-    protected  RabbitTemplate rabbitTemplate(){
+    protected RabbitTemplate rabbitTemplate() {
         if (this.rabbitTemplate != null) {
             return this.rabbitTemplate;
         }
@@ -105,5 +121,24 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
         if (!rabbitTemplate.isConfirmListener()) {
             rabbitTemplate.setConfirmCallback(this);
         }
+    }
+
+    /**
+     * When the maximum number of retries still fails, whether to record the sent message.
+     *
+     * @return result
+     */
+    protected boolean isRecordWhenFail() {
+        return false;
+    }
+
+    private void addFailLog(ConfirmedMsgWrapper message) {
+        MqSendFailLogDO mqSendFailLog = new MqSendFailLogDO();
+        String appName = StringUtils.isEmpty(this.appName) ? DEFAULT_APP_NAME : this.appName;
+        mqSendFailLog.setAppName(appName);
+        mqSendFailLog.setRetry(message.getRetryTimes());
+        mqSendFailLog.setCreateTime(System.currentTimeMillis());
+        mqSendFailLog.setUpdateTime(System.currentTimeMillis());
+        mqSendFailLog.setMsgInfo(JsonUtil.toJsonString(message));
     }
 }

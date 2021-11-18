@@ -1,6 +1,6 @@
 package com.hyl.mq.helper.support;
 
-import com.hyl.mq.helper.consumer.JdbcTemplateMqLogMapper;
+import com.hyl.mq.helper.common.JdbcTemplateHolder;
 import com.hyl.mq.helper.util.RedisUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author huayuanlin
  * @date 2021/10/26 09:50
  * @desc Inject a custom bean to the current framework, and the don't injected properties will use the default bean by default
- * @see JdbcTemplateMqLogMapper
+ * @see JdbcTemplateHolder
  * @see RedisUtil
  */
 public class MqHelperManager implements InitializingBean {
@@ -42,7 +42,7 @@ public class MqHelperManager implements InitializingBean {
             RedisUtil.initRedisTemplate(getRedisTemplate());
         }
         if (jdbcTemplate != null) {
-            JdbcTemplateMqLogMapper.initJdbcTemplate(getJdbcTemplate());
+            JdbcTemplateHolder.initJdbcTemplate(getJdbcTemplate());
         }
     }
 }

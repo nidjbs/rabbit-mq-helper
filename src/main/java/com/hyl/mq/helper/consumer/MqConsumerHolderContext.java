@@ -28,9 +28,12 @@ public class MqConsumerHolderContext {
         if (CollectionUtils.isEmpty(queueNames)) {
             return;
         }
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Assert.isTrue(parameterTypes.length != 0, "your consumer method params is empty! method is:" + method);
         ConsumerHolder holder = new ConsumerHolder();
         holder.setBean(targetBean);
         holder.setMethod(method);
+        holder.setMsgClazz(parameterTypes[0]);
         queueNames.forEach(queueName -> CONSUMER_HOLDER_MAP.put(queueName, holder));
     }
 
@@ -47,6 +50,16 @@ public class MqConsumerHolderContext {
         private Object bean;
 
         private Method method;
+
+        private Class<?> msgClazz;
+
+        public Class<?> getMsgClazz() {
+            return msgClazz;
+        }
+
+        public void setMsgClazz(Class<?> msgClazz) {
+            this.msgClazz = msgClazz;
+        }
 
         public Object getBean() {
             return bean;

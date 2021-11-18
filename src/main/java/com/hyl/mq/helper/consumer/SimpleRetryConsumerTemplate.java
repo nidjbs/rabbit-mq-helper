@@ -1,5 +1,6 @@
 package com.hyl.mq.helper.consumer;
 
+import com.hyl.mq.helper.consumer.compensate.CompensateState;
 import com.hyl.mq.helper.util.SafeExecuteUtil;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,6 +28,8 @@ public class SimpleRetryConsumerTemplate extends ConsumerTemplate {
                 consumerParam.getMsgPayloadStr(), consumerParam.getConsumerQueueNames());
         if (retryTimes >= consumerParam.getRetryTimes()) {
             LOGGER.warn("this message consumer is maximum number of times,uid is:" + consumerParam.getMsgUid());
+            // set for state compensation
+            mqLogMapper.getBean().updateState(consumerParam.getMsgUid(), CompensateState.WAIT_COMPENSATE);
             basicAck(consumerParam);
         } else {
             long retrySleepTimeOut = consumerParam.getRetrySleepTimeOut();

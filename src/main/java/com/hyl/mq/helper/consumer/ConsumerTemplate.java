@@ -13,14 +13,16 @@ import java.io.IOException;
  * @date 2021/10/24 16:27
  * @desc the class desc
  */
-public abstract class ConsumerTemplate {
+public abstract class ConsumerTemplate implements MqConsumer {
 
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(ConsumerTemplate.class);
 
 
-    protected final SingleSpringBeanWrapper<IMqLogMapper> mqLogMapper = new SingleSpringBeanWrapper<IMqLogMapper>(){};
+    protected final SingleSpringBeanWrapper<IMqConsumerLogMapper> mqLogMapper = new SingleSpringBeanWrapper<IMqConsumerLogMapper>() {
+    };
 
+    @Override
     public final Object consumer(InvocationConsumerParam consumerParam) {
         Object result = null;
         ConsumerParamHolder paramHolder = (ConsumerParamHolder) consumerParam;
@@ -30,6 +32,7 @@ public abstract class ConsumerTemplate {
         }
         try {
             result = consumerParam.invokeConsumerLogic();
+            onConsumerComplete(paramHolder);
             basicAck(paramHolder);
         } catch (Throwable consumerException) {
             LOGGER.error("consumer msg fail,msg id:" + paramHolder.getMsgUid(), consumerException);
