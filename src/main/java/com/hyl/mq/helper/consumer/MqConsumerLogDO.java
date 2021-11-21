@@ -6,7 +6,7 @@ package com.hyl.mq.helper.consumer;
  * @date 2021/08/07 20:43
  * @desc the class desc
  */
-public class MqLogDO {
+public class MqConsumerLogDO {
 
     /**
      * primaryKey

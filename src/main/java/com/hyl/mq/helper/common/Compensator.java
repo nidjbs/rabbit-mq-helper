@@ -8,7 +8,7 @@ package com.hyl.mq.helper.common;
 public interface Compensator<T> {
 
     /**
-     * 执行补偿
+     * executive compensation
      */
     void doCompensate();
 

@@ -2,6 +2,7 @@ package com.hyl.mq.helper.producer;
 
 
 import com.hyl.mq.helper.cache.MqRetryCounter;
+import com.hyl.mq.helper.common.AppInfoHolder;
 import com.hyl.mq.helper.common.CompensateState;
 import com.hyl.mq.helper.common.TreadPoolStrategy;
 import com.hyl.mq.helper.config.MqHelperConfig;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.UUID;
@@ -154,7 +154,7 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
 
     private void addFailLog(ConfirmedMsgWrapper message) {
         MqSendFailLogDO mqSendFailLog = new MqSendFailLogDO();
-        String appName = StringUtils.isEmpty(this.appName) ? DEFAULT_APP_NAME : this.appName;
+        String appName = AppInfoHolder.APP_INFO.getAppName();
         mqSendFailLog.setAppName(appName);
         mqSendFailLog.setSendBeanName(beanName);
         mqSendFailLog.setRetry(message.getRetryTimes());

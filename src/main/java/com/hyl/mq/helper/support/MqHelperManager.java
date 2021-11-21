@@ -1,10 +1,12 @@
 package com.hyl.mq.helper.support;
 
+import com.hyl.mq.helper.common.AppInfoHolder;
 import com.hyl.mq.helper.common.JdbcTemplateHolder;
 import com.hyl.mq.helper.util.RedisUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.StringUtils;
 
 /**
  * @author huayuanlin
@@ -18,6 +20,16 @@ public class MqHelperManager implements InitializingBean {
     private RedisTemplate<String, Object> redisTemplate;
 
     private JdbcTemplate jdbcTemplate;
+
+    private String appName;
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
 
     public RedisTemplate<String, Object> getRedisTemplate() {
         return redisTemplate;
@@ -36,6 +48,8 @@ public class MqHelperManager implements InitializingBean {
     }
 
 
+
+
     @Override
     public void afterPropertiesSet() throws Exception {
         if (redisTemplate != null) {
@@ -43,6 +57,9 @@ public class MqHelperManager implements InitializingBean {
         }
         if (jdbcTemplate != null) {
             JdbcTemplateHolder.initJdbcTemplate(getJdbcTemplate());
+        }
+        if (StringUtils.hasText(appName)) {
+            AppInfoHolder.APP_INFO.setAppName(appName);
         }
     }
 }

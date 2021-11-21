@@ -32,7 +32,7 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         if (!CollectionUtils.isEmpty(consumerQueueNames)) {
             consumerQueueNamesStr = consumerQueueNames.toString();
         }
-        MqLogDO mqLogDO = obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr, null);
+        MqConsumerLogDO mqLogDO = obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr, null);
         JdbcTemplateHolder.getJdbcTemplate().update(UPDATE_RETRY_TIMES_SQL, mqLogUid);
         return mqLogDO.getRetry() + 1;
     }
@@ -48,11 +48,11 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
     }
 
 
-    private MqLogDO obtainOrAdd(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
+    private MqConsumerLogDO obtainOrAdd(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
         String sqlFormat = String.format(SELECT_ID_BY_UID_SQL, mqLogUid);
-        List<MqLogDO> oldMqLog = JdbcTemplateHolder.getJdbcTemplate()
-                .query(sqlFormat, new BeanPropertyRowMapper<>(MqLogDO.class));
-        MqLogDO result;
+        List<MqConsumerLogDO> oldMqLog = JdbcTemplateHolder.getJdbcTemplate()
+                .query(sqlFormat, new BeanPropertyRowMapper<>(MqConsumerLogDO.class));
+        MqConsumerLogDO result;
         if (CollectionUtils.isEmpty(oldMqLog)) {
             result = addNewLog(mqLogUid, msg, consumerQueueNames, compensateState);
         } else {
@@ -77,8 +77,8 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         JdbcTemplateHolder.getJdbcTemplate().update(UPDATE_STATE_SQL, compensateState.getId(), mqLogUid);
     }
 
-    private MqLogDO addNewLog(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
-        MqLogDO mqLogDO = new MqLogDO();
+    private MqConsumerLogDO addNewLog(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
+        MqConsumerLogDO mqLogDO = new MqConsumerLogDO();
         mqLogDO.setCreateTime(System.currentTimeMillis());
         mqLogDO.setRetry(0);
         mqLogDO.setUpdateTime(System.currentTimeMillis());

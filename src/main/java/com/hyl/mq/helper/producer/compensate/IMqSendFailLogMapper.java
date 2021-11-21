@@ -24,9 +24,10 @@ public interface IMqSendFailLogMapper {
      * list compensate log
      *
      * @param batchSize batchSize
+     * @param appName appName
      * @return log list
      */
-    List<MqSendFailLogDO> listCompensateLog(int batchSize);
+    List<MqSendFailLogDO> listCompensateLog(String appName,int batchSize);
 
     /**
      * updateState

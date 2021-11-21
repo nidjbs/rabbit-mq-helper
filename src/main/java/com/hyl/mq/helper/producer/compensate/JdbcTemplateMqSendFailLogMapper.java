@@ -5,6 +5,7 @@ import com.hyl.mq.helper.common.JdbcTemplateHolder;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.util.Assert;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -18,7 +19,7 @@ public class JdbcTemplateMqSendFailLogMapper implements IMqSendFailLogMapper {
 
     private static final String INSERT_SQL = "INSERT INTO `mq_send_fail_log`(`app_name`,`retry`,`msg_info`,`create_time`,`update_time`,`send_bean_name`,`state`) VALUES(?,?,?,?,?,?,?)";
 
-    private static final String SELECT_ID_BY_UID_SQL = "SELECT `id`,`retry`,`app_name` AS appName,`msg_info` AS msgInfo,`state`,`send_bean_name` AS sendBeanName,`create_time` AS createTime,`update_time` FROM `mq_send_fail_log` WHERE `state` = 1 LIMIT %d ";
+    private static final String SELECT_SQL = "SELECT `id`,`retry`,`app_name` AS appName,`msg_info` AS msgInfo,`state`,`send_bean_name` AS sendBeanName,`create_time` AS createTime,`update_time` FROM `mq_send_fail_log` WHERE `state` = 1 AND `app_name` = %s  LIMIT %d ";
     private static final String UPDATE_STATE_SQL = "UPDATE `mq_send_fail_log` SET `state` = ? WHERE `id` = ? AND `state` = ? ";
 
     @Override
@@ -38,8 +39,9 @@ public class JdbcTemplateMqSendFailLogMapper implements IMqSendFailLogMapper {
     }
 
     @Override
-    public List<MqSendFailLogDO> listCompensateLog(int batchSize) {
-        String sqlFormat = String.format(SELECT_ID_BY_UID_SQL, batchSize);
+    public List<MqSendFailLogDO> listCompensateLog(String appName, int batchSize) {
+        Assert.hasLength(appName,"app name is empty!");
+        String sqlFormat = String.format(SELECT_SQL, appName, batchSize);
         return JdbcTemplateHolder.getJdbcTemplate()
                 .query(sqlFormat, new BeanPropertyRowMapper<>(MqSendFailLogDO.class));
     }

@@ -1,5 +1,6 @@
 package com.hyl.mq.helper.producer.compensate;
 
+import com.hyl.mq.helper.common.AppInfoHolder;
 import com.hyl.mq.helper.common.BatchCompensator;
 import com.hyl.mq.helper.consumer.SingleSpringBeanWrapper;
 
@@ -17,7 +18,8 @@ public abstract class AbstractSendFailCompensator implements BatchCompensator<Mq
 
     @Override
     public List<MqSendFailLogDO> getItems(int batchSize) {
-        return sendFailLogMapper.getBean().listCompensateLog(batchSize());
+        String appName = AppInfoHolder.APP_INFO.getAppName();
+        return sendFailLogMapper.getBean().listCompensateLog(appName, batchSize());
     }
 
     @Override
