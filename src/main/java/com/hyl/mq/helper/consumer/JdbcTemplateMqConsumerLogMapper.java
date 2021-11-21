@@ -1,7 +1,7 @@
 package com.hyl.mq.helper.consumer;
 
 import com.hyl.mq.helper.common.JdbcTemplateHolder;
-import com.hyl.mq.helper.consumer.compensate.CompensateState;
+import com.hyl.mq.helper.common.CompensateState;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -32,7 +32,7 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         if (!CollectionUtils.isEmpty(consumerQueueNames)) {
             consumerQueueNamesStr = consumerQueueNames.toString();
         }
-        MqLogDO mqLogDO = obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr);
+        MqLogDO mqLogDO = obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr, null);
         JdbcTemplateHolder.getJdbcTemplate().update(UPDATE_RETRY_TIMES_SQL, mqLogUid);
         return mqLogDO.getRetry() + 1;
     }
@@ -40,7 +40,7 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
     @Override
     public boolean tryAddMqLog(String mqLogUid, String msg) {
         try {
-            addNewLog(mqLogUid, msg, null);
+            addNewLog(mqLogUid, msg, null, null);
         } catch (DuplicateKeyException e) {
             return false;
         }
@@ -48,13 +48,13 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
     }
 
 
-    private MqLogDO obtainOrAdd(String mqLogUid, String msg, String consumerQueueNames) {
+    private MqLogDO obtainOrAdd(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
         String sqlFormat = String.format(SELECT_ID_BY_UID_SQL, mqLogUid);
         List<MqLogDO> oldMqLog = JdbcTemplateHolder.getJdbcTemplate()
                 .query(sqlFormat, new BeanPropertyRowMapper<>(MqLogDO.class));
         MqLogDO result;
         if (CollectionUtils.isEmpty(oldMqLog)) {
-            result = addNewLog(mqLogUid, msg, consumerQueueNames);
+            result = addNewLog(mqLogUid, msg, consumerQueueNames, compensateState);
         } else {
             result = oldMqLog.get(0);
         }
@@ -62,12 +62,12 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
     }
 
     @Override
-    public void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames) {
+    public void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames, CompensateState compensateState) {
         String consumerQueueNamesStr = null;
         if (!CollectionUtils.isEmpty(consumerQueueNames)) {
             consumerQueueNamesStr = consumerQueueNames.toString();
         }
-        obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr);
+        obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr, compensateState);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         JdbcTemplateHolder.getJdbcTemplate().update(UPDATE_STATE_SQL, compensateState.getId(), mqLogUid);
     }
 
-    private MqLogDO addNewLog(String mqLogUid, String msg, String consumerQueueNames) {
+    private MqLogDO addNewLog(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
         MqLogDO mqLogDO = new MqLogDO();
         mqLogDO.setCreateTime(System.currentTimeMillis());
         mqLogDO.setRetry(0);
@@ -85,7 +85,8 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         mqLogDO.setUniqueId(mqLogUid);
         mqLogDO.setMessage(msg);
         mqLogDO.setConsumerQueueNames(consumerQueueNames);
-        mqLogDO.setState(CompensateState.OTHER.getId());
+        int compensateStateId = compensateState == null ? CompensateState.OTHER.getId() : compensateState.getId();
+        mqLogDO.setState(compensateStateId);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         JdbcTemplateHolder.getJdbcTemplate().update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(

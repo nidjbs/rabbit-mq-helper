@@ -15,6 +15,8 @@ public class MqHelperConfig {
 
     private Consumer consumer = new Consumer();
 
+    private Compensator compensator = new Compensator();
+
 
     public static class Producer{
         private Integer retryTimes = 3;
@@ -46,6 +48,20 @@ public class MqHelperConfig {
         }
     }
 
+
+    public static class Compensator{
+
+        private Boolean localSenderEnable;
+
+        public Boolean getLocalSenderEnable() {
+            return localSenderEnable;
+        }
+
+        public void setLocalSenderEnable(Boolean localSenderEnable) {
+            this.localSenderEnable = localSenderEnable;
+        }
+    }
+
     public Producer getProducer() {
         return producer;
     }
@@ -60,5 +76,14 @@ public class MqHelperConfig {
 
     public void setConsumer(Consumer consumer) {
         this.consumer = consumer;
+    }
+
+
+    public Compensator getCompensator() {
+        return compensator;
+    }
+
+    public void setCompensator(Compensator compensator) {
+        this.compensator = compensator;
     }
 }

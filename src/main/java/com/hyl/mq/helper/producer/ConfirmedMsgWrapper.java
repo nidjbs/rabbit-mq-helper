@@ -7,9 +7,9 @@ package com.hyl.mq.helper.producer;
  */
 public class ConfirmedMsgWrapper {
 
-    private final String msg;
+    private String msg;
 
-    private final String exchange;
+    private String exchange;
 
     private String routingKey;
 
@@ -18,6 +18,10 @@ public class ConfirmedMsgWrapper {
     public ConfirmedMsgWrapper(String msg, String exchange) {
         this.msg = msg;
         this.exchange = exchange;
+    }
+
+    public ConfirmedMsgWrapper() {
+
     }
 
     public String getMsg() {

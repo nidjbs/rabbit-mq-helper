@@ -18,6 +18,11 @@ public class MqSendFailLogDO {
     private String appName;
 
     /**
+     * sender bean name
+     */
+    private String sendBeanName;
+
+    /**
      * retry
      */
     private Integer retry;
@@ -26,6 +31,11 @@ public class MqSendFailLogDO {
      * message info
      */
     private String msgInfo;
+
+    /**
+     * state (1-to be compensated, 2-compensation completed, -1 others)
+     */
+    private Integer state;
 
     /**
      * createTime
@@ -86,13 +96,31 @@ public class MqSendFailLogDO {
         this.updateTime = updateTime;
     }
 
+    public String getSendBeanName() {
+        return sendBeanName;
+    }
+
+    public void setSendBeanName(String sendBeanName) {
+        this.sendBeanName = sendBeanName;
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
         return "MqSendFailLogDO{" +
                 "id=" + id +
                 ", appName='" + appName + '\'' +
+                ", sendBeanName='" + sendBeanName + '\'' +
                 ", retry=" + retry +
                 ", msgInfo='" + msgInfo + '\'' +
+                ", state=" + state +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 '}';

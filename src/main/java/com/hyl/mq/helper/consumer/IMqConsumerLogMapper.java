@@ -1,6 +1,6 @@
 package com.hyl.mq.helper.consumer;
 
-import com.hyl.mq.helper.consumer.compensate.CompensateState;
+import com.hyl.mq.helper.common.CompensateState;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
@@ -28,7 +28,7 @@ public interface IMqConsumerLogMapper {
      * 尝试新增mqLog
      *
      * @param mqLogUid mqLogUid
-     * @param msg msg
+     * @param msg      msg
      * @return result
      */
     boolean tryAddMqLog(String mqLogUid, String msg);
@@ -36,16 +36,17 @@ public interface IMqConsumerLogMapper {
     /**
      * Add message record
      *
-     * @param mqLogUid mqLogUid
-     * @param msg      msg
-     * @param consumerQueueNames   consumerQueueNames
+     * @param mqLogUid           mqLogUid
+     * @param msg                msg
+     * @param consumerQueueNames consumerQueueNames
+     * @param compensateState compensateState
      */
-    void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames);
+    void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames, CompensateState compensateState);
 
     /**
      * update consumer mq msg state
      *
-     * @param mqLogUid mqLogUid
+     * @param mqLogUid        mqLogUid
      * @param compensateState compensateState
      */
     void updateState(String mqLogUid, CompensateState compensateState);

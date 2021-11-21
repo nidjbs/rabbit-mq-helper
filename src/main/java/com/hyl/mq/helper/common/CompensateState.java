@@ -1,4 +1,4 @@
-package com.hyl.mq.helper.consumer.compensate;
+package com.hyl.mq.helper.common;
 
 /**
  * @author huayuanlin
@@ -10,6 +10,7 @@ public enum CompensateState {
      * Compensate State
      */
     OTHER(-1),
+    COMPLETING(0),
     WAIT_COMPENSATE(1),
     COMPLETE(2);
 

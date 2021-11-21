@@ -2,6 +2,8 @@ package com.hyl.mq.helper.producer;
 
 
 import com.hyl.mq.helper.cache.MqRetryCounter;
+import com.hyl.mq.helper.common.CompensateState;
+import com.hyl.mq.helper.common.TreadPoolStrategy;
 import com.hyl.mq.helper.config.MqHelperConfig;
 import com.hyl.mq.helper.consumer.SingleSpringBeanWrapper;
 import com.hyl.mq.helper.exx.FrameworkException;
@@ -10,6 +12,7 @@ import com.hyl.mq.helper.producer.compensate.MqSendFailLogDO;
 import com.hyl.mq.helper.util.JsonUtil;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,18 +29,34 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author huayuanlin
  * @date 2021/09/22 14:35
- * @desc 请保证 rabbitmq.publisher-confirms=true
+ * @desc Please guarantee rabbitmq.publisher-confirms=true
  */
-public abstract class AbstractConfirmedMqSender implements RabbitTemplate.ConfirmCallback, InitializingBean, RabbitMqSender {
+public abstract class AbstractConfirmedMqSender implements RabbitTemplate.ConfirmCallback, InitializingBean, RabbitMqSender, BeanNameAware {
 
     private static final int CORE_COUNT = Runtime.getRuntime().availableProcessors();
 
     protected static ThreadPoolExecutor THREAD_POOL_EXECUTOR = new
-            ThreadPoolExecutor(CORE_COUNT, CORE_COUNT,
-            1000, TimeUnit.MILLISECONDS,
+            ThreadPoolExecutor(CORE_COUNT, CORE_COUNT * 10,
+            2000, TimeUnit.MILLISECONDS,
             new LinkedBlockingDeque<>(2000),
             new CustomizableThreadFactory("mq-sender-retry-pool"),
-            new ThreadPoolExecutor.AbortPolicy());
+            TreadPoolStrategy.runsOldestTaskPolicy());
+
+    static {
+        // Allow the core thread to be destroyed when there is no task after timeout.
+        THREAD_POOL_EXECUTOR.allowCoreThreadTimeOut(true);
+    }
+
+    protected String beanName;
+
+    @Override
+    public void setBeanName(String name) {
+        this.beanName = name;
+    }
+
+    public String getBeanName() {
+        return beanName;
+    }
 
     protected MqRetryCounter mqRetryCounter = MqRetryCounter.DEFAULT;
 
@@ -48,6 +67,7 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
     private String appName;
 
     private static final String DEFAULT_APP_NAME = "default_app_name";
+    private static final String MSG_PRE = "mq-helper:send-confirmed:";
 
     @Resource
     protected MqHelperConfig config;
@@ -86,7 +106,7 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
 
     @Override
     public void send(String exchange, String routingKey, String msg) {
-        String uuid = "mq-send-confirmed:" + UUID.randomUUID().toString();
+        String uuid =  MSG_PRE + UUID.randomUUID().toString();
         ConfirmedMsgWrapper message = new ConfirmedMsgWrapper(msg, exchange);
         message.setRetryTimes(0);
         message.setRoutingKey(routingKey);
@@ -136,9 +156,12 @@ public abstract class AbstractConfirmedMqSender implements RabbitTemplate.Confir
         MqSendFailLogDO mqSendFailLog = new MqSendFailLogDO();
         String appName = StringUtils.isEmpty(this.appName) ? DEFAULT_APP_NAME : this.appName;
         mqSendFailLog.setAppName(appName);
+        mqSendFailLog.setSendBeanName(beanName);
         mqSendFailLog.setRetry(message.getRetryTimes());
         mqSendFailLog.setCreateTime(System.currentTimeMillis());
         mqSendFailLog.setUpdateTime(System.currentTimeMillis());
         mqSendFailLog.setMsgInfo(JsonUtil.toJsonString(message));
+        mqSendFailLog.setState(CompensateState.WAIT_COMPENSATE.getId());
+        sendFailLogMapper.getBean().addFailLog(mqSendFailLog);
     }
 }

@@ -11,6 +11,9 @@ public class DbIdempotentLock implements IdempotentLock {
 
     private final SingleSpringBeanWrapper<IMqConsumerLogMapper> mqLogMapper = new SingleSpringBeanWrapper<IMqConsumerLogMapper>() {};
 
+    private DbIdempotentLock() {
+
+    }
 
     @Override
     public Boolean obtainLock(String key, String msg) {

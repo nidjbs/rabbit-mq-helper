@@ -10,7 +10,7 @@ import com.hyl.mq.helper.producer.ConfirmedMsgWrapper;
  */
 public class MqRetryCounter extends StandardRedisCache<ConfirmedMsgWrapper> {
 
-    public static final MqRetryCounter DEFAULT = new MqRetryCounter(15);
+    public static final MqRetryCounter DEFAULT = new MqRetryCounter(60 * 60);
 
     protected MqRetryCounter(int keyTimeOut) {
         super(keyTimeOut);

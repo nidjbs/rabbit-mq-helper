@@ -3,9 +3,10 @@ package com.hyl.mq.helper.config;
 import com.hyl.mq.helper.consumer.*;
 import com.hyl.mq.helper.producer.compensate.IMqSendFailLogMapper;
 import com.hyl.mq.helper.producer.compensate.JdbcTemplateMqSendFailLogMapper;
+import com.hyl.mq.helper.producer.compensate.MqSendFailLocalTimerCompensator;
 import com.hyl.mq.helper.util.SpringBeanUtil;
-import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,16 +15,10 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author huayuanlin
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(MqHelperConfig.class)
 public class MqHelperAutoConfiguration {
 
-
-    @Bean
-    @ConditionalOnMissingBean
-    public MethodInterceptor hpRabbitListenerMethodInterceptor() {
-        return new HpRabbitListenerMethodInterceptor();
-    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -34,7 +29,7 @@ public class MqHelperAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public AbstractAopProxyCreator hpRabbitListenerAopProxyCreator() {
-        return new HpRabbitListenerAopProxyCreator(hpRabbitListenerMethodInterceptor());
+        return new HpRabbitListenerAopProxyCreator(new HpRabbitListenerMethodInterceptor());
     }
 
     @Bean
@@ -54,4 +49,13 @@ public class MqHelperAutoConfiguration {
     public SpringBeanUtil hpSpringBeanUtil() {
         return new SpringBeanUtil();
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "mq.helper.compensator", value = "localSenderEnable", havingValue = "true")
+    public MqSendFailLocalTimerCompensator mqSendFailLocalTimerCompensator() {
+        return new MqSendFailLocalTimerCompensator();
+    }
+
+
 }

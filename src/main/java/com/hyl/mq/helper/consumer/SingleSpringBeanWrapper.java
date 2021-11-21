@@ -25,6 +25,11 @@ public class SingleSpringBeanWrapper<T> {
         return this.tClass;
     }
 
+    /**
+     * get singleton bean
+     *
+     * @return bean
+     */
     public T getBean() {
         if (t == null) {
             synchronized (this) {

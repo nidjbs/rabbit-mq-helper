@@ -1,6 +1,6 @@
 package com.hyl.mq.helper.consumer;
 
-import com.hyl.mq.helper.consumer.compensate.CompensateState;
+import com.hyl.mq.helper.common.CompensateState;
 import com.hyl.mq.helper.util.SafeExecuteUtil;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,6 +16,10 @@ public class SimpleRetryConsumerTemplate extends ConsumerTemplate {
 
 
     public static final SimpleRetryConsumerTemplate INSTANCE = new SimpleRetryConsumerTemplate();
+
+    private SimpleRetryConsumerTemplate() {
+
+    }
 
     /*** for delayed mq nack*/
     private static final ScheduledExecutorService SCHEDULED_EXECUTOR = new ScheduledThreadPoolExecutor(3,

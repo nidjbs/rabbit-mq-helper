@@ -1,5 +1,7 @@
 package com.hyl.mq.helper.consumer;
 
+import com.hyl.mq.helper.common.CompensateState;
+
 /**
  * @author huayuanlin
  * @date 2021/10/24 14:30
@@ -31,7 +33,7 @@ public abstract class IdempotentConsumerTemplate extends ConsumerTemplate {
     protected void onConsumerFail(ConsumerParamHolder consumerParam) {
         // Consumption fails, confirm directly after adding the failed record, waiting for compensation
         mqLogMapper.getBean().addMqLog(consumerParam.getMsgUid(),
-                consumerParam.getMsgPayloadStr(), consumerParam.getConsumerQueueNames());
+                consumerParam.getMsgPayloadStr(), consumerParam.getConsumerQueueNames(), CompensateState.WAIT_COMPENSATE);
         basicAck(consumerParam);
     }
 }
