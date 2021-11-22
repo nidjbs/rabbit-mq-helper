@@ -1,6 +1,4 @@
-# rabbit-mq-helper
-基于spring的一款致力于解决rabbitMq常见问题的helper工具
-#  一、前言
+#  一、前言 
 本工具暂仅解决rabbitMq的常见场景，如可靠投递、消费重试、消费幂，视你的业务场景选择，基本无侵入的实现上述功能，让你只需关注业务的逻辑。  
 本文不对rabbitmq架构设计以及消息的可靠投递、幂等等概念做过多解析，具体可参考别的文章。
 > - [x] 注：本工具与网上大部分文章提出的方案大概一致，只是基于spring-rabbitMq做了封装，让你尽可能的少关注这一层面的代码实现。
@@ -108,9 +106,43 @@ mq:
   helper:
     compensator:
       localSenderEnable: true #开启自带的发送者本地补偿机制，默认5秒执行一次，每次处理50条失败记录。
+      localSenderPeriod：10000 # sender补偿定时任务间隔
 ```
 一般的，我们根据该条消息的sender的bean进行重新发送，不论是否成功到达交换机，该条记录都被认为是补偿成功（如若最终失败发送，将会产生新的失败记录）。  
 开启上述功能后，能够保证你的消息最终都会正确的投递出去，当然这会增加消息被重复投递的可能性。
 
-### 消息消费补偿
-消费者的补偿较为复杂，因为这与你的业务紧密相关；
+### 2、消息消费补偿
+消费者的补偿较为复杂，因为这与你的业务紧密相关；  
+本工具提供本地定时任务补偿机制（不采用分布式的原因是不想耦合别的第三方框架），用于补偿你的消费失败的消息，以达到最终一致性。  
+
+```
+mq:
+  helper:
+    compensator:
+      localConsumerEnable: true #开启消费者者本地补偿机制，默认5秒执行一次，每次处理50条失败记录。
+      localSenderPeriod：10000 # consumer补偿定时任务间隔      
+      localConsumerQueueNames，: # 需要补偿的消费者队列，未指定的将不会定时补偿
+        - "testDirectQueue"
+```
+假设你配置了localConsumerQueueNames，则本地定时触发后，默认将会找到你标注了注解@HpRabbitListener的消费方法进行反射调用补偿，如需要自定义不同队列的补偿逻辑，则可以实现接口CustomerCompensator，如下：
+
+```
+@Component
+public class TestCustomerCompensator implements CustomerCompensator<String> {
+    @Override
+    public Set<String> queueNames() {
+        return Collections.singleton("testDirectQueue");
+    }
+
+    @Override
+    public void doCompensate(String msg) {
+        System.out.println("补偿消费成功,msg:" + msg);
+    }
+}
+```
+本工具会优先使用你自定义的补偿逻辑进行补偿调用，请注意如果你的补偿逻辑发生异常，则该条记录会一致重试直到成功。
+
+
+
+---
+github源码地址：https://github.com/nidjbs/rabbit-mq-helper
