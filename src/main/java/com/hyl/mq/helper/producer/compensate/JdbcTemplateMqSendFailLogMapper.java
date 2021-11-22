@@ -19,7 +19,7 @@ public class JdbcTemplateMqSendFailLogMapper implements IMqSendFailLogMapper {
 
     private static final String INSERT_SQL = "INSERT INTO `mq_send_fail_log`(`app_name`,`retry`,`msg_info`,`create_time`,`update_time`,`send_bean_name`,`state`) VALUES(?,?,?,?,?,?,?)";
 
-    private static final String SELECT_SQL = "SELECT `id`,`retry`,`app_name` AS appName,`msg_info` AS msgInfo,`state`,`send_bean_name` AS sendBeanName,`create_time` AS createTime,`update_time` FROM `mq_send_fail_log` WHERE `state` = 1 AND `app_name` = %s  LIMIT %d ";
+    private static final String SELECT_SQL = "SELECT `id`,`retry`,`app_name` AS appName,`msg_info` AS msgInfo,`state`,`send_bean_name` AS sendBeanName,`create_time` AS createTime,`update_time` FROM `mq_send_fail_log` WHERE `state` = 1 AND `app_name` = '%s'  LIMIT %d ";
     private static final String UPDATE_STATE_SQL = "UPDATE `mq_send_fail_log` SET `state` = ? WHERE `id` = ? AND `state` = ? ";
 
     @Override

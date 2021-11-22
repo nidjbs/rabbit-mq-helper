@@ -2,6 +2,8 @@ package com.hyl.mq.helper.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 /**
  * @author huayuanlin
  * @date 2021/10/22 14:15
@@ -52,6 +54,46 @@ public class MqHelperConfig {
     public static class Compensator{
 
         private Boolean localSenderEnable;
+
+        private Long localSenderPeriod = 5000L;
+
+        private Boolean localConsumerEnable;
+
+        private Long localConsumerPeriod = 5000L;
+
+        private List<String> localConsumerQueueNames;
+
+        public Long getLocalSenderPeriod() {
+            return localSenderPeriod;
+        }
+
+        public Long getLocalConsumerPeriod() {
+            return localConsumerPeriod;
+        }
+
+        public void setLocalConsumerPeriod(Long localConsumerPeriod) {
+            this.localConsumerPeriod = localConsumerPeriod;
+        }
+
+        public void setLocalSenderPeriod(Long localSenderPeriod) {
+            this.localSenderPeriod = localSenderPeriod;
+        }
+
+        public List<String> getLocalConsumerQueueNames() {
+            return localConsumerQueueNames;
+        }
+
+        public void setLocalConsumerQueueNames(List<String> localConsumerQueueNames) {
+            this.localConsumerQueueNames = localConsumerQueueNames;
+        }
+
+        public Boolean getLocalConsumerEnable() {
+            return localConsumerEnable;
+        }
+
+        public void setLocalConsumerEnable(Boolean localConsumerEnable) {
+            this.localConsumerEnable = localConsumerEnable;
+        }
 
         public Boolean getLocalSenderEnable() {
             return localSenderEnable;

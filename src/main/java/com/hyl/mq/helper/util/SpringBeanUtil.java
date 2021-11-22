@@ -3,7 +3,9 @@ package com.hyl.mq.helper.util;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -45,6 +47,13 @@ public class SpringBeanUtil implements ApplicationContextAware {
 
     public static ApplicationContext getApplicationContext() {
         return applicationContext;
+    }
+
+    public static String springApplicationName() {
+        String property = applicationContext.getEnvironment().getProperty("spring.application.name");
+        String appName = StringUtils.hasText(property) ? property : applicationContext.getId();
+        Assert.notNull(appName, "appName is null");
+        return appName;
     }
 
 }

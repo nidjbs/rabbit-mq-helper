@@ -1,7 +1,8 @@
 package com.hyl.mq.helper.consumer;
 
-import com.hyl.mq.helper.common.JdbcTemplateHolder;
+import com.hyl.mq.helper.common.AppInfoHolder;
 import com.hyl.mq.helper.common.CompensateState;
+import com.hyl.mq.helper.common.JdbcTemplateHolder;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -20,17 +21,20 @@ import java.util.Set;
  */
 public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
 
-    private static final String SELECT_ID_BY_UID_SQL = "SELECT id,`unique_id` AS uniqueId, state, retry, message, create_time AS createTime,update_time AS updateTime,consumer_queue_names AS consumerQueueNames FROM `mq_consumer_log` WHERE unique_id = '%s' ";
-    private static final String INSERT_SQL = "INSERT INTO `mq_consumer_log` (`unique_id`,`retry`,`message`,`create_time`,`update_time`,`consumer_queue_names`,`state`) VALUES (?,?,?,?,?,?,?) ";
+    private static final String BASE_SELECT_SQL = "SELECT id,`unique_id` AS uniqueId, state, retry, message, create_time AS createTime,update_time AS updateTime,consumer_queue_names AS consumerQueueNames,`app_name` AS appName FROM `mq_consumer_log` WHERE ";
+    private static final String SELECT_ID_BY_UID_SQL = BASE_SELECT_SQL + "unique_id = '%s' ";
+    private static final String SELECT_ID_BY_APP_NAME_SQL = BASE_SELECT_SQL + "`app_name` = '%s' AND `state` = 1 LIMIT %d ";
+    private static final String INSERT_SQL = "INSERT INTO `mq_consumer_log` (`unique_id`,`retry`,`message`,`create_time`,`update_time`,`consumer_queue_names`,`state`,`app_name`) VALUES (?,?,?,?,?,?,?,?) ";
     private static final String UPDATE_RETRY_TIMES_SQL = "UPDATE `mq_consumer_log` SET `retry` = `retry` + 1, `update_time` = current_timestamp() WHERE `unique_id` = ? ";
     private static final String UPDATE_STATE_SQL = "UPDATE `mq_consumer_log` SET `state` = ?, `update_time` = current_timestamp() WHERE `unique_id` = ? ";
+    private static final String TRY_UPDATE_STATE_SQL = "UPDATE `mq_consumer_log` SET `state` = ?, `update_time` = current_timestamp() WHERE `id` = ? and `state` = ? ";
 
 
     @Override
     public int addRetryTimes(String mqLogUid, String msg, Set<String> consumerQueueNames) {
         String consumerQueueNamesStr = null;
         if (!CollectionUtils.isEmpty(consumerQueueNames)) {
-            consumerQueueNamesStr = consumerQueueNames.toString();
+            consumerQueueNamesStr = String.join(",", consumerQueueNames);
         }
         MqConsumerLogDO mqLogDO = obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr, null);
         JdbcTemplateHolder.getJdbcTemplate().update(UPDATE_RETRY_TIMES_SQL, mqLogUid);
@@ -65,7 +69,7 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
     public void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames, CompensateState compensateState) {
         String consumerQueueNamesStr = null;
         if (!CollectionUtils.isEmpty(consumerQueueNames)) {
-            consumerQueueNamesStr = consumerQueueNames.toString();
+            consumerQueueNamesStr = String.join(",", consumerQueueNames);
         }
         obtainOrAdd(mqLogUid, msg, consumerQueueNamesStr, compensateState);
     }
@@ -76,6 +80,22 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         Assert.notNull(mqLogUid, "mqLogUid is null");
         JdbcTemplateHolder.getJdbcTemplate().update(UPDATE_STATE_SQL, compensateState.getId(), mqLogUid);
     }
+
+    @Override
+    public boolean tryUpdateState(Long id, CompensateState source, CompensateState compensateState) {
+        Assert.notNull(id, "id is null");
+        Assert.notNull(source, "source CompensateState enum is null");
+        Assert.notNull(compensateState, "target compensateState enum is null");
+        return JdbcTemplateHolder.getJdbcTemplate().update(TRY_UPDATE_STATE_SQL, compensateState.getId(), id, source.getId()) > 0;
+    }
+
+    @Override
+    public List<MqConsumerLogDO> listMqConsumerLog(int batchSize, String appName) {
+        String sqlFormat = String.format(SELECT_ID_BY_APP_NAME_SQL, appName, batchSize);
+        return JdbcTemplateHolder.getJdbcTemplate()
+                .query(sqlFormat, new BeanPropertyRowMapper<>(MqConsumerLogDO.class));
+    }
+
 
     private MqConsumerLogDO addNewLog(String mqLogUid, String msg, String consumerQueueNames, CompensateState compensateState) {
         MqConsumerLogDO mqLogDO = new MqConsumerLogDO();
@@ -88,6 +108,8 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
         int compensateStateId = compensateState == null ? CompensateState.OTHER.getId() : compensateState.getId();
         mqLogDO.setState(compensateStateId);
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        String appName = AppInfoHolder.APP_INFO.getAppName();
+        mqLogDO.setAppName(appName);
         JdbcTemplateHolder.getJdbcTemplate().update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     INSERT_SQL, new String[]{"id"});
@@ -98,6 +120,7 @@ public class JdbcTemplateMqConsumerLogMapper implements IMqConsumerLogMapper {
             preparedStatement.setLong(5, mqLogDO.getUpdateTime());
             preparedStatement.setString(6, mqLogDO.getConsumerQueueNames());
             preparedStatement.setInt(7, mqLogDO.getState());
+            preparedStatement.setString(8, mqLogDO.getAppName());
             return preparedStatement;
         }, keyHolder);
         return mqLogDO;

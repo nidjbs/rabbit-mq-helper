@@ -32,4 +32,12 @@ public interface BatchCompensator<T> extends Compensator<T> {
      */
     int batchSize();
 
+
+    /**
+     * doCompensate
+     */
+    @Override
+    default void doCompensate() {
+        process(getItems(batchSize()));
+    }
 }

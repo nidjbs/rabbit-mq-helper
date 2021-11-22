@@ -16,11 +16,11 @@ import java.util.Optional;
  * @date 2021/11/19 11:46
  * @desc the class desc
  */
-public class DefaultMqSenderFailCompensator extends AbstractSendFailCompensator {
+public class LocalMqSenderFailCompensator extends AbstractSendFailCompensator {
 
-    public static final DefaultMqSenderFailCompensator INSTANCE = new DefaultMqSenderFailCompensator();
+    public static final LocalMqSenderFailCompensator INSTANCE = new LocalMqSenderFailCompensator();
 
-    private DefaultMqSenderFailCompensator() {
+    private LocalMqSenderFailCompensator() {
 
     }
 
@@ -44,19 +44,22 @@ public class DefaultMqSenderFailCompensator extends AbstractSendFailCompensator 
 
     @Override
     public void process(List<MqSendFailLogDO> items) {
+        if(CollectionUtils.isEmpty(items)) {
+            return;
+        }
         StreamUtil.nonNull(items).forEach(item -> {
             Optional<AbstractConfirmedMqSender> senderByBeanName = getSenderByBeanName(item.getSendBeanName());
             senderByBeanName.ifPresent(sender -> {
                 // process with tx
                 ManualTxParams<Void> manualTxParams = new ManualTxParams<>();
-                manualTxParams.setTimeout(5);
-                manualTxParams.setFunc(param -> singleProcessWithTx(sender, item));
+                manualTxParams.setTimeout(-1);
+                manualTxParams.setFunc(param -> singletonProcess(sender, item));
                 ManualTxUtil.startTxWithOutParams(manualTxParams);
             });
         });
     }
 
-    private Void singleProcessWithTx(AbstractConfirmedMqSender sender, MqSendFailLogDO mqSendFailLog) {
+    private Void singletonProcess(AbstractConfirmedMqSender sender, MqSendFailLogDO mqSendFailLog) {
         String msgInfo = mqSendFailLog.getMsgInfo();
         // update log to Compensating state
         boolean dbLockSucceed = sendFailLogMapper.getBean().updateState(mqSendFailLog.getId(),

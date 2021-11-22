@@ -39,6 +39,11 @@ public class MqConsumerLogDO {
     private Integer state;
 
     /**
+     * app name
+     */
+    private String appName;
+
+    /**
      * createTime
      */
     private Long createTime;
@@ -50,16 +55,25 @@ public class MqConsumerLogDO {
 
     @Override
     public String toString() {
-        return "MqLogDO{" +
+        return "MqConsumerLogDO{" +
                 "id=" + id +
                 ", uniqueId='" + uniqueId + '\'' +
                 ", consumerQueueNames='" + consumerQueueNames + '\'' +
                 ", retry=" + retry +
                 ", message='" + message + '\'' +
                 ", state=" + state +
+                ", appName='" + appName + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 '}';
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public Integer getState() {

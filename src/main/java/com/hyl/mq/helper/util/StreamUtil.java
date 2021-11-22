@@ -3,6 +3,7 @@ package com.hyl.mq.helper.util;
 
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -115,4 +116,15 @@ public class StreamUtil {
         return nonNull(list).filter(predicate).collect(Collectors.toList());
     }
 
+
+    /**
+     * 根据逗号字符串分割
+     */
+    public static <R> List<R> slipWithColon(String str, Function<String, R> mapFun) {
+        if (StringUtils.isEmpty(str)) {
+            return new ArrayList<>();
+        }
+        return Stream.of(str.split(",")).filter(StringUtils::hasText)
+                .map(mapFun).collect(Collectors.toList());
+    }
 }

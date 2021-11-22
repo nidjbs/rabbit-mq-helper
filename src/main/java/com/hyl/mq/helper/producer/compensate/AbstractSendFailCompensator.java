@@ -22,12 +22,6 @@ public abstract class AbstractSendFailCompensator implements BatchCompensator<Mq
         return sendFailLogMapper.getBean().listCompensateLog(appName, batchSize());
     }
 
-    @Override
-    public void doCompensate() {
-        List<MqSendFailLogDO> items = getItems(batchSize());
-        process(items);
-    }
-
 
     @Override
     public int batchSize() {

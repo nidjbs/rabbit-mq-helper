@@ -3,6 +3,7 @@ package com.hyl.mq.helper.consumer;
 import com.hyl.mq.helper.common.CompensateState;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,7 +40,7 @@ public interface IMqConsumerLogMapper {
      * @param mqLogUid           mqLogUid
      * @param msg                msg
      * @param consumerQueueNames consumerQueueNames
-     * @param compensateState compensateState
+     * @param compensateState    compensateState
      */
     void addMqLog(String mqLogUid, String msg, Set<String> consumerQueueNames, CompensateState compensateState);
 
@@ -50,6 +51,24 @@ public interface IMqConsumerLogMapper {
      * @param compensateState compensateState
      */
     void updateState(String mqLogUid, CompensateState compensateState);
+
+    /**
+     * try update consumer mq msg state
+     *
+     * @param id              id
+     * @param source          source state
+     * @param compensateState compensateState
+     */
+    boolean tryUpdateState(Long id, CompensateState source, CompensateState compensateState);
+
+    /**
+     * query list MqConsumerLog
+     *
+     * @param batchSize batchSize
+     * @param appName   appName
+     * @return list
+     */
+    List<MqConsumerLogDO> listMqConsumerLog(int batchSize, String appName);
 
 
 }

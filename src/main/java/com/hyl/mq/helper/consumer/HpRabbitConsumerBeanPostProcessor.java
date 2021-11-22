@@ -37,7 +37,7 @@ public class HpRabbitConsumerBeanPostProcessor implements SmartInstantiationAwar
             }
             Set<String> queueNames = AnnotationUtil.resolveQueueNames(hpRabbitListener);
             // Put the consumer method into the context to facilitate the compensation logic
-            MqConsumerHolderContext.INSTANCE.registerHolder(queueNames, method, bean);
+            MqConsumerHolderContext.registerHolder(queueNames, method, bean);
             // Copy the properties of HpRabbitListener to RabbitListener
             Map<String, Object> memberValuesMap = getAnnotationMembers(rabbitListener.getClass(), rabbitListener);
             Map<String, Object> hpMemberValuesMap = getAnnotationMembers(hpRabbitListener.getClass(), hpRabbitListener);

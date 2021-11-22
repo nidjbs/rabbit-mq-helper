@@ -1,7 +1,8 @@
-package com.hyl.mq.helper.producer.compensate;
+package com.hyl.mq.helper.consumer.compensate;
 
 import com.hyl.mq.helper.common.Compensator;
 import com.hyl.mq.helper.config.MqHelperConfig;
+import com.hyl.mq.helper.consumer.MqConsumerLogDO;
 import com.hyl.mq.helper.util.SafeExecuteUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -13,15 +14,15 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author huayuanlin
- * @date 2021/11/19 16:03
+ * @date 2021/11/22 15:09
  * @desc the class desc
  */
-public class MqSendFailLocalTimerCompensator implements Compensator<MqSendFailLogDO>, ApplicationListener<ContextRefreshedEvent> {
+public class ConsumerFailLocalTimerCompensator implements Compensator<MqConsumerLogDO>, ApplicationListener<ContextRefreshedEvent> {
 
-    private final Compensator<MqSendFailLogDO> compensatorDelegate = LocalMqSenderFailCompensator.INSTANCE;
+    private final Compensator<MqConsumerLogDO> compensatorDelegate = DefaultLocalConsumerCompensator.INSTANCE;
 
     private final ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(1,
-            r -> new Thread(r, "mq send fail compensator"));
+            r -> new Thread(r, "mq consumer fail compensator"));
 
     @Autowired
     private MqHelperConfig mqHelperConfig;
@@ -33,9 +34,9 @@ public class MqSendFailLocalTimerCompensator implements Compensator<MqSendFailLo
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        Long localSenderPeriod = mqHelperConfig.getCompensator().getLocalSenderPeriod();
+        Long localConsumerPeriod = mqHelperConfig.getCompensator().getLocalConsumerPeriod();
         scheduledExecutorService.scheduleAtFixedRate(
                 () -> SafeExecuteUtil.safeExecute(this::doCompensate, Exception.class),
-                localSenderPeriod, localSenderPeriod, TimeUnit.MILLISECONDS);
+                localConsumerPeriod, localConsumerPeriod, TimeUnit.MILLISECONDS);
     }
 }

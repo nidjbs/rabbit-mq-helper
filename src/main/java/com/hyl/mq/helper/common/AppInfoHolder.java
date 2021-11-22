@@ -18,7 +18,7 @@ public class AppInfoHolder {
         if (StringUtils.hasText(appName)) {
             return this.appName;
         } else {
-            return SpringBeanUtil.getApplicationContext().getApplicationName();
+            return SpringBeanUtil.springApplicationName();
         }
     }
 

@@ -1,11 +1,14 @@
 package com.hyl.mq.helper.consumer;
 
+import com.hyl.mq.helper.util.JsonUtil;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,13 +19,15 @@ import java.util.Set;
  */
 public class MqConsumerHolderContext {
 
-    public static final MqConsumerHolderContext INSTANCE = new MqConsumerHolderContext();
+    private MqConsumerHolderContext() {
+        throw new UnsupportedOperationException();
+    }
 
     /*** k：queueName，v: consumer holder */
     private static final Map<String, ConsumerHolder> CONSUMER_HOLDER_MAP = new HashMap<>(16);
 
 
-    public void registerHolder(Set<String> queueNames, Method method, Object targetBean) {
+    public static void registerHolder(Set<String> queueNames, Method method, Object targetBean) {
         Assert.notNull(method, "register method is null!");
         Assert.notNull(targetBean, "targetBean is null!");
         if (CollectionUtils.isEmpty(queueNames)) {
@@ -38,10 +43,36 @@ public class MqConsumerHolderContext {
     }
 
 
-    public void invokeHolderMethod(String queueName) {
-        Assert.hasText(queueName, "queueName");
-        ConsumerHolder holder = CONSUMER_HOLDER_MAP.get(queueName);
-        ReflectionUtils.invokeMethod(holder.getMethod(), holder.getBean());
+    public static void invokeSingleConsumer(List<String> queueNames, String msg) {
+        if (CollectionUtils.isEmpty(queueNames) || StringUtils.isEmpty(msg)) {
+            return;
+        }
+        ConsumerHolder consumerHolder = null;
+        for (String queueName : queueNames) {
+            ConsumerHolder holder = CONSUMER_HOLDER_MAP.get(queueName);
+            if (holder != null) {
+                consumerHolder = holder;
+                break;
+            }
+        }
+        if (consumerHolder != null) {
+            Method method = consumerHolder.getMethod();
+            ReflectionUtils.makeAccessible(method);
+            ReflectionUtils.invokeMethod(method, consumerHolder.getBean(), buildMethodParam(consumerHolder, msg));
+        }
+    }
+
+    private static Object[] buildMethodParam(ConsumerHolder consumerHolder, String msgStr) {
+        Class<?> msgClazz = consumerHolder.getMsgClazz();
+        Method method = consumerHolder.getMethod();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] params = new Object[parameterTypes.length];
+        if (msgClazz == String.class) {
+            params[0] = msgStr;
+        } else {
+            params[0] = JsonUtil.fromJson(msgStr, msgClazz);
+        }
+        return params;
     }
 
 

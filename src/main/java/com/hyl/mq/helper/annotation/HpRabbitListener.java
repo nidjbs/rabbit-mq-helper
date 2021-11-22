@@ -133,8 +133,8 @@ public @interface HpRabbitListener {
 
     /**
      * Idempotent implementation type Effective when idempotence is turned on
-     * Redis: 通过redis实现，弱一致性，并发度更高.
-     * @return 幂等类型
+     * Redis: Realized by redis, weak consistency, higher concurrency.
+     * @return Idempotent type
      */
     IDEMPOTENT idempotentType() default IDEMPOTENT.REDIS;
 
