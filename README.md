@@ -44,7 +44,7 @@ acknowledge-mode: manual
 ```
 @HpRabbitListener可以指定与@RabbitListener所有相同的属性，并且可以指定消费逻辑在处理异常时如何应对。  
 上述例子中设定消费失败时最大重试3次，并且为了防止快速重试，每次消费失败后休眠5秒，具体参数视你的场景而定。  
-> 注：这里的休眠时间并不等于重试的时间间隔，而是休眠一段时候后nack，消息重新回到队列中。  
+> 注：这里的休眠时间并不等于重试的时间间隔，而是休眠一段时候后nack，消息重新回到队列中。请注意：如果存在大量失败消息，则会堵塞住并且不再从broker拉取消息。  
 > 开启重试时请尽量保证关闭spring-rabbitmq自带的重试机制：spring.rabbitmq.listener.simple.retry.enabled = false。
 
 ### 2、消费幂等
